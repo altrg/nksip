@@ -179,8 +179,8 @@ parse_opts([Term|Rest], Req, Resp, Code, Opts) ->
                 true ->
                     move_to_last
             end;
-        {to_tag, _} when Code==100 ->
-            ignore;
+        %% {to_tag, _} when Code==100 ->
+        %%    ignore;
         {to_tag, ToTag} ->
             case is_binary(ToTag) of
                 true ->

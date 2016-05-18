@@ -130,11 +130,13 @@ outbound_opts(tls, AppId) ->
             DefKey = ""
     end,
     Config = nksip_sipapp_srv:config(AppId),
+    Ciphers = nksip_lib:get_value(ciphers, Config, ""),
     CA = nksip_lib:get_value(cacertfile, Config, DefCA),
     Cert = nksip_lib:get_value(certfile, Config, DefCert),
     Key = nksip_lib:get_value(keyfile, Config, DefKey),
     lists:flatten([
         binary, {active, false}, {nodelay, true}, {keepalive, true}, {packet, raw},
+        case Ciphers of "" -> []; _ -> {ciphers, Ciphers} end,
         case CA of "" -> []; _ -> {cacertfile, CA} end,
         case Cert of "" -> []; _ -> {certfile, Cert} end,
         case Key of "" -> []; _ -> {keyfile, Key} end

@@ -167,6 +167,7 @@ listen_opts(tls, Ip, Port, Opts) ->
             DefCert = "",
             DefKey = ""
     end,
+    Ciphers = nksip_lib:get_value(ciphers, Opts, ""),
     CA = nksip_lib:get_value(cacertfile, Opts, DefCA),
     Cert = nksip_lib:get_value(certfile, Opts, DefCert),
     Key = nksip_lib:get_value(keyfile, Opts, DefKey),
@@ -175,6 +176,7 @@ listen_opts(tls, Ip, Port, Opts) ->
         {ip, Ip}, {port, Port}, {active, false}, 
         {nodelay, true}, {keepalive, true}, {packet, raw},
         {max_connections, Max},
+        case Ciphers of "" -> []; _ -> {ciphers, Ciphers} end,
         case CA of "" -> []; _ -> {cacertfile, CA} end,
         case Cert of "" -> []; _ -> {certfile, Cert} end,
         case Key of "" -> []; _ -> {keyfile, Key} end

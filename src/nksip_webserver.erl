@@ -283,6 +283,7 @@ terminate(_Reason, _State) ->
 do_start_server(Ref, Dispatch, Opts) ->
     {Proto, Ip, Port} = Ref,
     Env = {env, [{dispatch, cowboy_router:compile(Dispatch)}]},
+    ProtOpts = [Env, {compress, true}],
     Listeners = nksip_lib:get_value(listeners, Opts, 1), 
     ListenOpts = listen_opts(Proto, Ip, Port, Opts), 
     TransMod = if
@@ -290,7 +291,7 @@ do_start_server(Ref, Dispatch, Opts) ->
         Proto==tls; Proto==wss -> ranch_ssl
     end,
     Spec = ranch:child_spec(Ref, Listeners,
-                            TransMod, ListenOpts, cowboy_protocol, [Env]),
+                            TransMod, ListenOpts, cowboy_protocol, ProtOpts),
     % Hack to hook after process creation and use our registry
     {ranch_listener_sup, start_link, StartOpts} = element(2, Spec),
     Spec1 = setelement(2, Spec, {?MODULE, ranch_start_link, StartOpts}),
@@ -385,10 +386,10 @@ listen_opts(wss, Ip, Port, Opts) ->
 -spec ranch_start_link(any(), non_neg_integer(), module(), term(), module(), term())-> 
     {ok, pid()}.
 
-ranch_start_link(Ref, NbAcceptors, RanchTransp, TransOpts, Protocol, [Env]) ->
+ranch_start_link(Ref, NbAcceptors, RanchTransp, TransOpts, Protocol, ProtOpts) ->
     case 
         ranch_listener_sup:start_link(Ref, NbAcceptors, RanchTransp, TransOpts, 
-                                      Protocol, [Env])
+                                      Protocol, ProtOpts)
     of
         {ok, Pid} ->
             {Proto, Ip, _} = Ref,

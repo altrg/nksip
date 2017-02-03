@@ -279,21 +279,15 @@ expire_timer(cancel, Trans, _Call) ->
     Trans#trans{expire_timer=undefined};
 
 expire_timer(expire, Trans, _Call) ->
-    #trans{id=TransId, class=Class, request=Req, opts=Opts} = Trans,
+    #trans{class=Class, request=Req} = Trans,
     cancel_timer(Trans#trans.expire_timer),
     Timer = case Req#sipmsg.expires of
         Expires when is_integer(Expires), Expires > 0 -> 
-            case lists:member(no_auto_expire, Opts) of
-                true -> 
-                    ?call_debug("UAC ~p skipping INVITE expire", [TransId]),
-                    undefined;
-                _ -> 
-                    Time = case Class of 
-                        uac -> 1000*Expires;
-                        uas -> 1000*Expires+100     % UAC fires first
-                    end,
-                    start_timer(Time, expire, Trans)
-            end;
+            Time = case Class of 
+                uac -> 1000*Expires;
+                uas -> 1000*Expires+100     % UAC fires first
+            end,
+            start_timer(Time, expire, Trans);
         _ ->
             undefined
     end,

@@ -125,10 +125,17 @@ do_timer(expire, #trans{id=TransId, status=Status}=UAC, Call) ->
     UAC1 = UAC#trans{expire_timer=undefined},
     if
         Status==invite_calling; Status==invite_proceeding ->
-            ?call_debug("UAC ~p 'INVITE' (~p) Timer Expire fired, sending CANCEL", 
-                        [TransId, Status]),
-            UAC2 = UAC1#trans{status=invite_proceeding},
-            nksip_call_uac:cancel(UAC2, [], update(UAC2, Call));
+            case lists:member(no_auto_expire, UAC1#trans.opts) of
+                true ->
+                    ?call_debug("UAC ~p 'INVITE' (~p) Timer Expire fired", [TransId, Status]),
+                    UAC2 = nksip_call_lib:retrans_timer(cancel, UAC1, Call),
+                    update(UAC2#trans{cancel=cancelled}, Call);
+                false ->
+                    ?call_debug("UAC ~p 'INVITE' (~p) Timer Expire fired, sending CANCEL", 
+                                [TransId, Status]),
+                    UAC2 = UAC1#trans{status=invite_proceeding},
+                    nksip_call_uac:cancel(UAC2, [], update(UAC2, Call))
+            end;
         true ->
             ?call_debug("UAC ~p 'INVITE' (~p) Timer Expire fired", [TransId, Status]),
             update(UAC1, Call)

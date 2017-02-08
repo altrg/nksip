@@ -124,7 +124,7 @@ do_timer(timer_k,  #trans{id=TransId, status=Status, method=Method}=UAC, Call) -
 do_timer(expire, #trans{id=TransId, status=Status}=UAC, Call) ->
     UAC1 = UAC#trans{expire_timer=undefined},
     if
-        Status==invite_calling; Status==invite_proceeding ->
+        Status==invite_calling ->
             case lists:member(no_auto_expire, UAC1#trans.opts) of
                 true ->
                     ?call_debug("UAC ~p 'INVITE' (~p) Timer Expire fired", [TransId, Status]),

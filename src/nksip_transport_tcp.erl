@@ -121,22 +121,26 @@ outbound_opts(tcp, _AppId) ->
 outbound_opts(tls, AppId) ->
     case code:priv_dir(nksip) of
         PrivDir when is_list(PrivDir) ->
+            DefDH = filename:join(PrivDir, "dh.pem"),
             DefCA = filename:join(PrivDir, "ca.pem"),
             DefCert = filename:join(PrivDir, "cert.pem"),
             DefKey = filename:join(PrivDir, "key.pem");
         _ ->
+            DefDH = "",
             DefCA = "",
             DefCert = "",
             DefKey = ""
     end,
     Config = nksip_sipapp_srv:config(AppId),
     Ciphers = nksip_lib:get_value(ciphers, Config, ""),
+    DH = nksip_lib:get_value(dhfile, Config, DefDH),
     CA = nksip_lib:get_value(cacertfile, Config, DefCA),
     Cert = nksip_lib:get_value(certfile, Config, DefCert),
     Key = nksip_lib:get_value(keyfile, Config, DefKey),
     lists:flatten([
         binary, {active, false}, {nodelay, true}, {keepalive, true}, {packet, raw},
         case Ciphers of "" -> []; _ -> {ciphers, Ciphers} end,
+        case DH of "" -> []; _ -> {dhfile, DH} end,
         case CA of "" -> []; _ -> {cacertfile, CA} end,
         case Cert of "" -> []; _ -> {certfile, Cert} end,
         case Key of "" -> []; _ -> {keyfile, Key} end
@@ -159,15 +163,18 @@ listen_opts(tcp, Ip, Port, Opts) ->
 listen_opts(tls, Ip, Port, Opts) ->
     case code:priv_dir(nksip) of
         PrivDir when is_list(PrivDir) ->
+            DefDH = filename:join(PrivDir, "dh.pem"),
             DefCA = filename:join(PrivDir, "ca.pem"),
             DefCert = filename:join(PrivDir, "cert.pem"),
             DefKey = filename:join(PrivDir, "key.pem");
         _ ->
+            DefDH = "",
             DefCA = "",
             DefCert = "",
             DefKey = ""
     end,
     Ciphers = nksip_lib:get_value(ciphers, Opts, ""),
+    DH = nksip_lib:get_value(dhfile, Opts, DefDH),
     CA = nksip_lib:get_value(cacertfile, Opts, DefCA),
     Cert = nksip_lib:get_value(certfile, Opts, DefCert),
     Key = nksip_lib:get_value(keyfile, Opts, DefKey),
@@ -177,6 +184,7 @@ listen_opts(tls, Ip, Port, Opts) ->
         {nodelay, true}, {keepalive, true}, {packet, raw},
         {max_connections, Max},
         case Ciphers of "" -> []; _ -> {ciphers, Ciphers} end,
+        case DH of "" -> []; _ -> {dhfile, DH} end,
         case CA of "" -> []; _ -> {cacertfile, CA} end,
         case Cert of "" -> []; _ -> {certfile, Cert} end,
         case Key of "" -> []; _ -> {keyfile, Key} end

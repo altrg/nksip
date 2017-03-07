@@ -270,10 +270,12 @@ websocket_init(_TransportName, Req, [AppId, Transp, Opts]) ->
             Timeout = nksip_lib:get_value(timeout, Opts),
             {{RemoteIp, RemotePort}, _} = cowboy_req:peer(Req3),
             {Path, _} = cowboy_req:path(Req3),
+            {Headers, _} = cowboy_req:headers(Req3),
             Transp1 = Transp#transport{
                 remote_ip = RemoteIp, 
                 remote_port = RemotePort,
-                resource = Path
+                resource = Path,
+                meta = [{ws_headers, Headers}]
             },
             {ok, Pid} = nksip_connection:start_link(AppId, Transp1, self(), Timeout),
             {ok, Req3, #ws_state{conn_pid=Pid}};

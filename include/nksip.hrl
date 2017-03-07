@@ -143,7 +143,8 @@
     listen_ip :: inet:ip_address(),         % Ip this transport must report as listening
     listen_port :: inet:port_number(),
     sctp_id :: integer(),
-    resource = <<>> :: binary()      
+    resource = <<>> :: binary(),
+    meta = [] :: proplists:proplist()
 }).
 
 
